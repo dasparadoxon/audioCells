@@ -218,11 +218,11 @@ void draw() {
 
     float scaledEnergyFromHeights = map(energyFromHeights, 0, 1, 0, 255);
 
-    midFrequenciesLayerRight.applyForceToCell(0, 0, scaledEnergyFromHeights);
-    midFrequenciesLayerRight.applyForceToCell(0, 1, scaledEnergyFromHeights / 2);
-    midFrequenciesLayerRight.applyForceToCell(0, 2, scaledEnergyFromHeights / 2);
-    midFrequenciesLayerRight.applyForceToCell(0, 3, scaledEnergyFromHeights / 4);
-    midFrequenciesLayerRight.applyForceToCell(0, 4, scaledEnergyFromHeights / 4);
+    highFrequenciesLayer.applyForceToCell(0, 0, scaledEnergyFromHeights/ 4);
+    highFrequenciesLayer.applyForceToCell(1, 0, scaledEnergyFromHeights / 2);
+    highFrequenciesLayer.applyForceToCell(2, 0, scaledEnergyFromHeights );
+    highFrequenciesLayer.applyForceToCell(3, 0, scaledEnergyFromHeights / 2);
+    highFrequenciesLayer.applyForceToCell(4, 0, scaledEnergyFromHeights / 4);
     
     scaledEnergyFromHeights = map(energyFromHeights, 0, 1, 0, 50);
     
@@ -257,7 +257,7 @@ void draw() {
     midFrequenciesLayerRight.applyForceToCell(4, 4, scaledEnergyFromHeights / 4); 
     
     scaledEnergyFromHeights = map(energyFromMids, 0, 1, 0, 50);
-    
+     
     inputArrows[3].intensity = scaledEnergyFromHeights;   
 
   
