@@ -15,10 +15,14 @@ class Layer {
   Direction direction;
 
   String name;
+  
+  boolean active = true;
 
   boolean debug = true;
 
   Layer(String nameForLayer, Direction layerDirection) {
+    
+    
 
     direction = layerDirection;
 
@@ -54,8 +58,9 @@ class Layer {
   }
 
   void applyForceToCell(int x, int y, float force) {
-
-    cells[y][x].value = force;
+    
+    if(active)
+      cells[y][x].value = force;
   }
 
   void step() {
@@ -93,7 +98,8 @@ class Layer {
             isZero = true;
 
           if (!isZero) {  
-            println("Moving energy from "+x+"/"+y+" to "+nX+"/"+nY+" with value:"+cells[y][x].value / 2f);
+            
+            //println("Moving energy from "+x+"/"+y+" to "+nX+"/"+nY+" with value:"+cells[y][x].value / 2f);
 
             //debugLayer();
             //debugStepAheadLayer();
@@ -154,7 +160,7 @@ class Layer {
       println();
       for (int x=0; x<cellGridWidth; x++) {
 
-        print(cells[y][x].value+" : ");
+        //print(cells[y][x].value+" : ");
 
 
         //println("Mergin Layer :"+name+" of Cell ("+x+"/"+y+") with value : "+layer.cells[y][x].value);
@@ -182,21 +188,4 @@ class Layer {
     println();
   }  
 
-  /* Cell getCell(int x, int y) {
-   
-   println("GetCell");
-   
-   for (int i=0; i< cells.size(); i++) {
-   
-   println("Going through Cell:"+i+" at "+cells.get(i).x+" and "+cells.get(i).y);
-   
-   
-   
-   if (cells.get(i).x == x && cells.get(i).y == y) {
-   
-   return cells.get(i);
-   }
-   }
-   return null;
-   } */
 }

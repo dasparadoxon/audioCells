@@ -1,3 +1,5 @@
+
+
 // AUDIO CELLS
 
 // DISPLAYS STEP-BY-STEP ENERGY TRANSFER LAYERS 
@@ -7,6 +9,10 @@
 // https://stackoverflow.com/questions/11867545/change-text-color-based-on-brightness-of-the-covered-background-area
 
 import processing.sound.*;
+import controlP5.*;
+
+
+ControlP5 cp5;
 
 SoundFile sample;
 FFT fft;
@@ -47,13 +53,93 @@ Layer midFrequenciesLayerLeft = new Layer("MittenLinks", Direction.LEFT);
 Layer bottomFrequenciesLayer = new Layer("Bässe", Direction.UP);
 Layer midFrequenciesLayerRight = new Layer("MittenRechts", Direction.RIGHT);
 
+void guiSetup(){
+  
+  cp5 = new ControlP5(this);
+  
+  // create a toggle and change the default look to a (on/off) switch look
+  cp5.addToggle("toggleHeights")
+     .setPosition(width/2 +120 / 2, 5 + 20)
+     .setSize(50,20)
+     .setValue(true)
+     .setMode(ControlP5.SWITCH)
+     ;
+     
+  cp5.addToggle("toggleBasses")
+     .setPosition(width/2 +120 / 2, height - 65 + 20)
+     .setSize(50,20)
+     .setValue(true)
+     .setMode(ControlP5.SWITCH)
+     ;     
+     
+  cp5.addToggle("toggleLeft")
+     .setPosition(20 + 3, height/2 +60)
+     .setSize(24,12)
+     .setValue(true)
+     .setMode(ControlP5.SWITCH)
+     ;        
+     
+  cp5.addToggle("toggleRight")
+     .setPosition(width - 47, height/2 +60)
+     .setSize(24,12)
+     .setValue(true)
+     .setMode(ControlP5.SWITCH)
+     ;       
+  
+}
+
+void toggleHeights(boolean theFlag) {
+  
+  
+  if(theFlag==true) {
+    highFrequenciesLayer.active = true;
+  } else {
+    highFrequenciesLayer.active = false;
+  }
+  println("High Frequency Status :  "+highFrequenciesLayer.active);
+}
+
+void toggleBasses(boolean theFlag) {
+  
+  
+  if(theFlag==true) {
+    bottomFrequenciesLayer.active = true;
+  } else {
+    bottomFrequenciesLayer.active = false;
+  }
+  println("bottomFrequenciesLayer Frequency Status :  "+highFrequenciesLayer.active);
+}
+
+void toggleLeft(boolean theFlag) {
+  
+  
+  if(theFlag==true) {
+    midFrequenciesLayerLeft.active = true;
+  } else {
+    midFrequenciesLayerLeft.active = false;
+  }
+  println("midFrequenciesLayerLeft Frequency Status :  "+highFrequenciesLayer.active);
+}
+
+void toggleRight(boolean theFlag) {
+  
+  
+  if(theFlag==true) {
+    midFrequenciesLayerRight.active = true;
+  } else {
+    midFrequenciesLayerRight.active = false;
+  }
+  println("midFrequenciesLayerRight Frequency Status :  "+highFrequenciesLayer.active);
+}
 
 void setup() {
+
+  guiSetup();
   
-  inputArrows[0] = new Arrow(Direction.DOWN,"HEIGHTS");
-  inputArrows[1] = new Arrow(Direction.UP,"BASS");
-  inputArrows[2] = new Arrow(Direction.LEFT,"MIDS");
-  inputArrows[3] = new Arrow(Direction.RIGHT,"MIDS");
+  inputArrows[0] = new Arrow(Direction.DOWN,"HEIGHTS",highFrequenciesLayer);
+  inputArrows[1] = new Arrow(Direction.UP,"BASS",bottomFrequenciesLayer);
+  inputArrows[2] = new Arrow(Direction.LEFT,"MIDS",midFrequenciesLayerLeft);
+  inputArrows[3] = new Arrow(Direction.RIGHT,"MIDS",midFrequenciesLayerRight);
 
   time = millis();//store the current time
   timeStep = millis();//store the current time
@@ -73,22 +159,6 @@ void setup() {
   // Cells & Layers
 
   initializeCells();
-
-
-
-  //highFrequenciesLayer.applyForceToCell(2, 0, 3);
-
-
-
-  //bottomFrequenciesLayer.applyForceToCell(4, 4, 5);
-
-
-
-  //midFrequenciesLayerLeft.applyForceToCell(0, 2, 7);
-
-
-
-  //midFrequenciesLayerRight.applyForceToCell(4, 1, 17);
 
   layers.add(midFrequenciesLayerRight);
   layers.add(highFrequenciesLayer);
@@ -272,7 +342,7 @@ void runLayers() {
 
   for (Layer layer : layers) {
 
-    println("Running layer :"+layer.name);
+    //println("Running layer :"+layer.name);
 
     layer.step();
   }
