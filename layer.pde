@@ -108,6 +108,8 @@ class Layer {
           }
         }
 
+        nextStepCells[y][x].value = cells[y][x].value;
+        
         cells[y][x].value = 0;
       }
 

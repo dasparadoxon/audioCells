@@ -1,5 +1,3 @@
-
-
 // AUDIO CELLS
 
 // DISPLAYS STEP-BY-STEP ENERGY TRANSFER LAYERS 
@@ -20,7 +18,7 @@ AudioDevice device;
 LowPass lowPass;
 
 // Define how many FFT bands we want
-int bands = 4 ;
+int bands = 8;
 
 public enum Direction {
 
@@ -29,7 +27,7 @@ public enum Direction {
 
 int time;
 int timeStep;
-int wait = 25;
+int wait = 4;
 int waitStep = wait;
 
 ArrayList<Layer> layers = new ArrayList<Layer>();
@@ -53,45 +51,60 @@ Layer midFrequenciesLayerLeft = new Layer("MittenLinks", Direction.LEFT);
 Layer bottomFrequenciesLayer = new Layer("Bässe", Direction.UP);
 Layer midFrequenciesLayerRight = new Layer("MittenRechts", Direction.RIGHT);
 
-void guiSetup(){
-  
+void guiSetup() {
+
   cp5 = new ControlP5(this);
-  
+
   // create a toggle and change the default look to a (on/off) switch look
   cp5.addToggle("toggleHeights")
-     .setPosition(width/2 +120 / 2, 5 + 20)
-     .setSize(50,20)
-     .setValue(true)
-     .setMode(ControlP5.SWITCH)
-     ;
-     
+    .setPosition(width/2 +120 / 2, 5 + 20)
+    .setSize(50, 20)
+    .setValue(true)
+    .setMode(ControlP5.SWITCH)
+    ;
+
   cp5.addToggle("toggleBasses")
-     .setPosition(width/2 +120 / 2, height - 65 + 20)
-     .setSize(50,20)
-     .setValue(true)
-     .setMode(ControlP5.SWITCH)
-     ;     
-     
+    .setPosition(width/2 +120 / 2, height - 65 + 20)
+    .setSize(50, 20)
+    .setValue(true)
+    .setMode(ControlP5.SWITCH)
+    ;     
+
   cp5.addToggle("toggleLeft")
-     .setPosition(20 + 3, height/2 +60)
-     .setSize(24,12)
-     .setValue(true)
-     .setMode(ControlP5.SWITCH)
-     ;        
-     
+    .setPosition(20 + 3, height/2 +60)
+    .setSize(24, 12)
+    .setValue(true)
+    .setMode(ControlP5.SWITCH)
+    ;        
+
   cp5.addToggle("toggleRight")
-     .setPosition(width - 47, height/2 +60)
-     .setSize(24,12)
-     .setValue(true)
-     .setMode(ControlP5.SWITCH)
-     ;       
-  
+    .setPosition(width - 47, height/2 +60)
+    .setSize(24, 12)
+    .setValue(true)
+    .setMode(ControlP5.SWITCH)
+    ;      
+
+  cp5.addToggle("showNumericValues")
+    .setPosition(10, 10)
+    .setCaptionLabel("mesh setup")
+    .setSize(24, 12)
+    .setValue(true)
+    .setMode(ControlP5.SWITCH)
+    ;       
+
+  cp5.getController("showNumericValues").getCaptionLabel().setColor(color(255, 255, 255) );
+
+  cp5.addTextlabel("numericValuesLabel")
+    .setText("Show values")
+    .setPosition(40, 10)
+    .setColorValue(0xffffffff)
+    .setFont(createFont("Georgia", 20));
 }
 
 void toggleHeights(boolean theFlag) {
-  
-  
-  if(theFlag==true) {
+
+
+  if (theFlag==true) {
     highFrequenciesLayer.active = true;
   } else {
     highFrequenciesLayer.active = false;
@@ -100,9 +113,9 @@ void toggleHeights(boolean theFlag) {
 }
 
 void toggleBasses(boolean theFlag) {
-  
-  
-  if(theFlag==true) {
+
+
+  if (theFlag==true) {
     bottomFrequenciesLayer.active = true;
   } else {
     bottomFrequenciesLayer.active = false;
@@ -111,9 +124,9 @@ void toggleBasses(boolean theFlag) {
 }
 
 void toggleLeft(boolean theFlag) {
-  
-  
-  if(theFlag==true) {
+
+
+  if (theFlag==true) {
     midFrequenciesLayerLeft.active = true;
   } else {
     midFrequenciesLayerLeft.active = false;
@@ -122,9 +135,9 @@ void toggleLeft(boolean theFlag) {
 }
 
 void toggleRight(boolean theFlag) {
-  
-  
-  if(theFlag==true) {
+
+
+  if (theFlag==true) {
     midFrequenciesLayerRight.active = true;
   } else {
     midFrequenciesLayerRight.active = false;
@@ -135,11 +148,11 @@ void toggleRight(boolean theFlag) {
 void setup() {
 
   guiSetup();
-  
-  inputArrows[0] = new Arrow(Direction.DOWN,"HEIGHTS",highFrequenciesLayer);
-  inputArrows[1] = new Arrow(Direction.UP,"BASS",bottomFrequenciesLayer);
-  inputArrows[2] = new Arrow(Direction.LEFT,"MIDS",midFrequenciesLayerLeft);
-  inputArrows[3] = new Arrow(Direction.RIGHT,"MIDS",midFrequenciesLayerRight);
+
+  inputArrows[0] = new Arrow(Direction.DOWN, "HEIGHTS", highFrequenciesLayer);
+  inputArrows[1] = new Arrow(Direction.UP, "BASS", bottomFrequenciesLayer);
+  inputArrows[2] = new Arrow(Direction.LEFT, "MIDS", midFrequenciesLayerLeft);
+  inputArrows[3] = new Arrow(Direction.RIGHT, "MIDS", midFrequenciesLayerRight);
 
   time = millis();//store the current time
   timeStep = millis();//store the current time
@@ -182,21 +195,25 @@ void initAudio() {
 }
 
 void draw() {
-  
+
+  pushStyle();
+
   background(255);
-  
+
   inputArrows[0].draw();
   inputArrows[1].draw();
   inputArrows[2].draw();
   inputArrows[3].draw();
 
+  fft.analyze();
+
+  drawLittleSpektrum();
+
   if (millis() - time >= wait) {
 
     time = millis();//also update the stored time
 
-    fft.analyze();
 
-    //drawLittleSpektrum();
 
     float energyFromBass = fft.spectrum[0];
 
@@ -207,14 +224,14 @@ void draw() {
     bottomFrequenciesLayer.applyForceToCell(3, 4, scaledEnergyFromBass / 2);
     bottomFrequenciesLayer.applyForceToCell(0, 4, scaledEnergyFromBass / 4);
     bottomFrequenciesLayer.applyForceToCell(4, 4, scaledEnergyFromBass / 4);
-    
+
     scaledEnergyFromBass = map(energyFromBass, 0, 1, 0, 50);
-    
+
     inputArrows[1].intensity = scaledEnergyFromBass;
-    
+
     // HIGHS
-    
-    float energyFromHeights = fft.spectrum[3];
+
+    float energyFromHeights = fft.spectrum[5];
 
     float scaledEnergyFromHeights = map(energyFromHeights, 0, 1, 0, 255);
 
@@ -223,62 +240,59 @@ void draw() {
     highFrequenciesLayer.applyForceToCell(2, 0, scaledEnergyFromHeights );
     highFrequenciesLayer.applyForceToCell(3, 0, scaledEnergyFromHeights / 2);
     highFrequenciesLayer.applyForceToCell(4, 0, scaledEnergyFromHeights / 4);
-    
+
     scaledEnergyFromHeights = map(energyFromHeights, 0, 1, 0, 50);
-    
+
     inputArrows[0].intensity = scaledEnergyFromHeights;    
-    
+
     // MIDS
-    
+
     float energyFromMids = fft.spectrum[3];
 
     float scaledEnergyFromMids = map(energyFromMids, 0, 1, 0, 255);
-    
-    midFrequenciesLayerLeft.applyForceToCell(0, 0, scaledEnergyFromHeights);
+
+    midFrequenciesLayerLeft.applyForceToCell(0, 2, scaledEnergyFromHeights);
     midFrequenciesLayerLeft.applyForceToCell(0, 1, scaledEnergyFromHeights / 2);
-    midFrequenciesLayerLeft.applyForceToCell(0, 2, scaledEnergyFromHeights / 2);
-    midFrequenciesLayerLeft.applyForceToCell(0, 3, scaledEnergyFromHeights / 4);
+    midFrequenciesLayerLeft.applyForceToCell(0, 3, scaledEnergyFromHeights / 2);
+    midFrequenciesLayerLeft.applyForceToCell(0, 0, scaledEnergyFromHeights / 4);
     midFrequenciesLayerLeft.applyForceToCell(0, 4, scaledEnergyFromHeights / 4);   
-    
+
     scaledEnergyFromHeights = map(energyFromMids, 0, 1, 0, 50);
-    
+
     inputArrows[2].intensity = scaledEnergyFromHeights;   
-    
+
     // RIGHT
-        
-    energyFromMids = fft.spectrum[2];
+
+    energyFromMids = fft.spectrum[3];
 
     scaledEnergyFromMids = map(energyFromMids, 0, 1, 0, 255);
-    
-    midFrequenciesLayerRight.applyForceToCell(4, 0, scaledEnergyFromHeights);
-    midFrequenciesLayerRight.applyForceToCell(4, 1, scaledEnergyFromHeights / 2);
-    midFrequenciesLayerRight.applyForceToCell(4, 2, scaledEnergyFromHeights / 2);
-    midFrequenciesLayerRight.applyForceToCell(4, 3, scaledEnergyFromHeights / 4);
-    midFrequenciesLayerRight.applyForceToCell(4, 4, scaledEnergyFromHeights / 4); 
-    
-    scaledEnergyFromHeights = map(energyFromMids, 0, 1, 0, 50);
-     
-    inputArrows[3].intensity = scaledEnergyFromHeights;   
 
-  
-    
-    
+    midFrequenciesLayerRight.applyForceToCell(4, 2, scaledEnergyFromHeights);
+    midFrequenciesLayerRight.applyForceToCell(4, 1, scaledEnergyFromHeights / 2);
+    midFrequenciesLayerRight.applyForceToCell(4, 3, scaledEnergyFromHeights / 2);
+    midFrequenciesLayerRight.applyForceToCell(4, 0, scaledEnergyFromHeights / 4);
+    midFrequenciesLayerRight.applyForceToCell(4, 4, scaledEnergyFromHeights / 4); 
+
+    scaledEnergyFromHeights = map(energyFromMids, 0, 1, 0, 50);
+
+    inputArrows[3].intensity = scaledEnergyFromHeights;
   }  
 
   if (millis() - timeStep >= waitStep) {
 
     timeStep = millis();//also update the stored time
-    
+
     step();
-    
   }
 
   drawLayers();
+
+  popStyle();
 }
 
 void drawLittleSpektrum() {
 
-  int r_width = 40;
+  int r_width = 160 / bands;
 
   // Create a smoothing vector
   float[] sum = new float[bands];
@@ -292,16 +306,31 @@ void drawLittleSpektrum() {
   pushStyle();
 
   background(255, 255, 255);
+  
+  fill(255,255,255);
+  
+  rect(10,height-100,160,80);
+  
   fill(255, 0, 150);
+  
   noStroke();
+  
 
   for (int i = 0; i < bands; i++) {
 
     // smooth the FFT data by smoothing factor
-    sum[i] += (fft.spectrum[i] - sum[i]) * smooth_factor;
+    //sum[i] += (fft.spectrum[i] - sum[i]) * smooth_factor;
+    
+   //println(fft.spectrum[i]);
+   
+   float spe = fft.spectrum[i];
+    
+    float heightOfBars = map(spe*4,0,1,0,40);
+    
+    println(heightOfBars);
 
     // draw the rects with a scale factor
-    rect( i*r_width, height, r_width, -sum[i]*height*scale );
+    rect( 10 + i*r_width, height-20, r_width,  -heightOfBars);
   }
 
   popStyle();
@@ -370,8 +399,8 @@ void drawLayers() {
   pushMatrix();
 
   translate(width/2 - (squareCellSize*spacing/2) + (spacing/2), height/2- (squareCellSize*spacing/2)+ (spacing/2));
-  
-  rect(-45,-45,squareCellSize*spacing - 30,squareCellSize*spacing - 25);
+
+  rect(-45, -45, squareCellSize*spacing - 30, squareCellSize*spacing - 25);
 
   for (int y=0; y<5; y++)
     for (int x=0; x<5; x++) {
@@ -384,7 +413,9 @@ void drawLayers() {
 
       fill(colorValue, 127, 127);
 
-      ellipse(x*spacing, y*spacing, cellWidth, cellHeight);
+      float size = map(cells[y][x].value, 0, 3, 2, cellWidth/4);
+
+      ellipse(x*spacing, y*spacing, size, size);
 
       popStyle();
 
@@ -403,7 +434,7 @@ void drawLayers() {
 
       int  valuePosOffset = -5;
 
-      text(s, x*spacing - valuePosOffset - 15, y*spacing - valuePosOffset);
+      //text(s, x*spacing - valuePosOffset - 15, y*spacing - valuePosOffset);
 
       popStyle();
     }
